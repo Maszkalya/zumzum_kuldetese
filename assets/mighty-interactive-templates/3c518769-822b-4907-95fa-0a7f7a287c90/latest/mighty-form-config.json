@@ -1,0 +1,189 @@
+{
+  "version": 1,
+  "name": "Card Stack",
+  "formElements": [
+    {
+      "type": "panel",
+      "headerTitle": "Appearance",
+      "expandable": false,
+      "formElements": [
+        {
+          "type": "selector-input",
+          "formKey": "cardSize",
+          "label": "Card orientation",
+          "labelPosition": "top",
+          "helperText": "Proportions of each card",
+          "options": [
+            { "label": "Portrait (playing card)", "value": "portrait" },
+            { "label": "Landscape", "value": "landscape" },
+            { "label": "Square", "value": "square" }
+          ]
+        },
+        {
+          "type": "slider-input",
+          "formKey": "cardRadius",
+          "label": "Corner radius",
+          "labelPosition": "top",
+          "minValue": 0,
+          "maxValue": 28,
+          "stepSize": 1,
+          "helperText": "Roundness of card corners (px). 0 = square, ~10 = playing card, ~20 = rounded."
+        },
+        {
+          "type": "color-input",
+          "formKey": "cardColor",
+          "label": "Card colour",
+          "labelPosition": "top",
+          "helperText": "Background colour of the card inset area. Defaults to light grey.",
+          "isClearColorAvailable": true
+        },
+        {
+          "type": "slider-input",
+          "formKey": "angleSpread",
+          "label": "Angular spread",
+          "labelPosition": "top",
+          "minValue": 0,
+          "maxValue": 20,
+          "stepSize": 1,
+          "helperText": "How much the stacked cards fan out (0 = flat stack, 20 = wide fan)"
+        },
+        {
+          "type": "toggle-input",
+          "formKey": "showTapHint",
+          "label": "Show 'Tap to continue' hint",
+          "helperText": "Show a subtle prompt at the bottom of each content card"
+        },
+        {
+          "type": "text-input",
+          "formKey": "tapHintText",
+          "label": "Hint text",
+          "labelPosition": "top",
+          "placeholder": "Tap to continue",
+          "helperText": "Customise the hint text (defaults to 'Tap to continue')",
+          "visibilityCondition": {
+            "operator": "and",
+            "conditions": [
+              {
+                "fieldPath": "$form.showTapHint",
+                "fieldType": "boolean",
+                "condition": { "operator": "eq", "matchValue": true }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "headerTitle": "Cover card",
+      "expandable": true,
+      "collapsed": false,
+      "formElements": [
+        {
+          "type": "toggle-input",
+          "formKey": "showCoverCard",
+          "label": "Show cover card",
+          "helperText": "Adds a themed title card at the front of the stack"
+        },
+        {
+          "type": "color-input",
+          "formKey": "coverBgColor",
+          "label": "Cover background colour",
+          "labelPosition": "top",
+          "helperText": "Background colour of the cover card. Text colour is set automatically for readability.",
+          "visibilityCondition": {
+            "operator": "and",
+            "conditions": [
+              {
+                "fieldPath": "$form.showCoverCard",
+                "fieldType": "boolean",
+                "condition": { "operator": "eq", "matchValue": true }
+              }
+            ]
+          }
+        },
+        {
+          "type": "asset-input",
+          "formKey": "coverCardImage",
+          "accept": "image/*",
+          "label": "Cover image (optional)",
+          "helperText": "Image displayed as a CSS cover background on the cover card",
+          "visibilityCondition": {
+            "operator": "and",
+            "conditions": [
+              {
+                "fieldPath": "$form.showCoverCard",
+                "fieldType": "boolean",
+                "condition": { "operator": "eq", "matchValue": true }
+              }
+            ]
+          }
+        },
+        {
+          "type": "text-input",
+          "formKey": "coverCardText",
+          "label": "Cover card text",
+          "labelPosition": "top",
+          "placeholder": "e.g. Start",
+          "helperText": "Text centred over the cover card (leave blank to show image only)",
+          "visibilityCondition": {
+            "operator": "and",
+            "conditions": [
+              {
+                "fieldPath": "$form.showCoverCard",
+                "fieldType": "boolean",
+                "condition": { "operator": "eq", "matchValue": true }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "headerTitle": "Cards",
+      "expandable": false,
+      "formElements": [
+        {
+          "type": "collection-manager",
+          "formKey": "cards",
+          "itemSingularLabel": "Card",
+          "itemPluralLabel": "Cards",
+          "itemEditorFormElements": [
+            {
+              "type": "richtext-input",
+              "formKey": "cardContent",
+              "label": "Card text",
+              "labelPosition": "top",
+              "placeholder": "Enter card content…",
+              "inputMinHeight": "120px"
+            },
+            {
+              "type": "asset-input",
+              "formKey": "cardImage",
+              "accept": "image/*",
+              "label": "Card image (optional)",
+              "helperText": "Image shown above the text on this card"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "headerTitle": "End screen",
+      "expandable": true,
+      "collapsed": true,
+      "formElements": [
+        {
+          "type": "text-input",
+          "formKey": "restartLabel",
+          "label": "Restart label",
+          "labelPosition": "top",
+          "placeholder": "e.g. Start over",
+          "helperText": "Text shown beneath the restart icon after the last card (leave blank to show icon only)"
+        }
+      ]
+    }
+  ]
+}

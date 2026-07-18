@@ -1,0 +1,869 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8">
+  <style id="mighty-reset-css">/* Basic reset - lowest priority */
+* { box-sizing: border-box; }
+body { margin: 0; padding: 0; font-family: sans-serif; line-height: 1.5; }</style><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Stack</title>
+  
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: transparent;
+      min-height: 500px;
+    }
+
+    #app {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 3rem;
+      min-height: 500px;
+    }
+
+    /* ── Discard pile ───────────────────────────────────────────── */
+    #discard-area {
+      position: absolute;
+      top: 2rem;
+      right: 1rem;
+      width: var(--thumb-w, 60px);
+      height: var(--thumb-h, 84px);
+      cursor: pointer;
+    }
+
+    .discard-thumb {
+      position: absolute;
+      top: 0; left: 0;
+      width: var(--thumb-w, 60px);
+      height: var(--thumb-h, 84px);
+      border-radius: var(--thumb-radius, 4px);
+      background: #fff;
+      cursor: pointer;
+      transform-origin: center center;
+      overflow: hidden;
+    }
+
+    .discard-thumb .thumb-frame {
+      position: absolute;
+      inset: 0;
+      border-radius: var(--thumb-radius, 4px);
+      border: 1.5px solid #d1d5db;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .discard-thumb .thumb-inner {
+      position: absolute;
+      inset: 3px;
+      border-radius: calc(var(--thumb-radius, 4px) - 1px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.35rem;
+      overflow: hidden;
+      background: var(--card-color, #f3f4f6);
+    }
+
+    /* ── Stack area ─────────────────────────────────────────────── */
+    #stack-area {
+      position: relative;
+    }
+
+    .stack-ghost {
+      position: absolute;
+      top: 0; left: 0;
+      pointer-events: none;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    .stack-ghost::after {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border-radius: calc(var(--card-radius, 10px) - 3px);
+      background: var(--card-color, #f3f4f6);
+      z-index: 0;
+    }
+
+    .ghost-preview {
+      position: absolute;
+      inset: 6px;
+      border-radius: calc(var(--card-radius, 10px) - 3px);
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .ghost-preview-inner {
+      position: absolute;
+      top: 0; left: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* ── Card wrapper ───────────────────────────────────────────── */
+    .card-wrapper {
+      position: absolute;
+      top: 0; left: 0;
+      perspective: 1000px;
+      cursor: pointer;
+      z-index: 10;
+      transform-origin: center center;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .card-frame {
+      position: absolute;
+      inset: 0;
+      border-radius: var(--card-radius, 10px);
+      border: 1px solid #d1d5db;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.13), 0 1px 4px rgba(0,0,0,0.08);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .card-front {
+      border-radius: var(--card-radius, 10px);
+      background: #fff;
+      overflow: hidden;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-front-inset {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      border-radius: calc(var(--card-radius, 10px) - 4px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: var(--card-color, #f3f4f6);
+    }
+
+    .card-front-inset.is-cover {
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cover-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .cover-text {
+      position: relative;
+      z-index: 1;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-align: center;
+      padding: 1.5rem;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+
+    .card-back {
+      border-radius: var(--card-radius, 10px);
+      background: linear-gradient(145deg, #e5e7eb 0%, #d1d5db 100%);
+      transform: rotateY(180deg);
+      overflow: hidden;
+      padding: 8px;
+    }
+
+    .card-back-inset {
+      width: 100%;
+      height: 100%;
+      border-radius: calc(var(--card-radius, 10px) - 4px);
+      background: linear-gradient(145deg, #f3f4f6 0%, #e5e7eb 100%);
+    }
+
+    .card-back-frame {
+      position: absolute;
+      inset: 0;
+      border-radius: var(--card-radius, 10px);
+      border: 1px solid #c9cdd4;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .card-content-area {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+    }
+
+    .card-content-area img { width: 100%; border-radius: 4px; object-fit: cover; }
+    .card-content-area p { line-height: 1.55; }
+    .card-content-area h1, .card-content-area h2, .card-content-area h3 { margin-bottom: 0.25em; }
+
+    .tap-hint {
+      font-size: 0.68rem;
+      color: rgba(0,0,0,0.3);
+      text-align: center;
+      padding: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    /* ── Restart screen ─────────────────────────────────────────── */
+    #restart-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #restart-screen.visible { display: flex; opacity: 1; }
+
+    .restart-icon {
+      width: 64px; height: 64px;
+      color: #6b7280;
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), color 0.2s ease;
+    }
+    #restart-screen:hover .restart-icon { transform: rotate(-40deg); color: #374151; }
+
+    .restart-label {
+      margin-top: 0.75rem;
+      font-size: 0.95rem;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    /* ── Animations ─────────────────────────────────────────────── */
+    @keyframes flickOut {
+      0%   { transform: translate(0,0) rotate(0deg) scale(1); }
+      8%   { transform: translate(-6px, 4px) rotate(-3deg) scale(1.01); }
+      80%  { transform: translate(var(--tx), var(--ty)) rotate(var(--flick-rot)) scale(var(--scale-end)); }
+      90%  { transform: translate(calc(var(--tx) + 4px), calc(var(--ty) - 3px)) rotate(calc(var(--flick-rot) + 4deg)) scale(calc(var(--scale-end) * 0.97)); }
+      100% { transform: translate(var(--tx), var(--ty)) rotate(var(--flick-rot)) scale(var(--scale-end)); }
+    }
+
+    @keyframes flickIn {
+      0%   { transform: translate(var(--tx), var(--ty)) rotate(var(--flick-rot)) scale(var(--scale-end)); }
+      20%  { transform: translate(calc(var(--tx) * 0.5), calc(var(--ty) * 0.5)) rotate(calc(var(--flick-rot) * 0.5)) scale(calc(var(--scale-end) * 1.1)); }
+      85%  { transform: translate(2px, -3px) rotate(-2deg) scale(1.01); }
+      100% { transform: translate(0,0) rotate(0deg) scale(1); }
+    }
+
+    @keyframes flipFaceOut {
+      0%   { transform: rotateY(0deg); }
+      50%  { transform: rotateY(90deg); }
+      100% { transform: rotateY(180deg); }
+    }
+
+    @keyframes flipFaceIn {
+      0%   { transform: rotateY(180deg); }
+      50%  { transform: rotateY(90deg); }
+      100% { transform: rotateY(0deg); }
+    }
+
+    @keyframes alignIn {
+      0%   { transform: rotate(var(--align-from, -5deg)); }
+      60%  { transform: rotate(calc(var(--align-from, -5deg) * -0.08)); }
+      80%  { transform: rotate(calc(var(--align-from, -5deg) * 0.04)); }
+      100% { transform: rotate(0deg); }
+    }
+
+    /* Flick-out: applied directly to the departing card-wrapper */
+    .card-wrapper.flicking-out {
+      animation: flickOut var(--flick-duration, 0.52s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      z-index: 20;
+      pointer-events: none;
+    }
+    .card-wrapper.flicking-out .card-inner {
+      animation: flipFaceOut var(--flick-duration, 0.52s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    /* Flick-in: applied directly to the returning card-wrapper */
+    .card-wrapper.flicking-in {
+      animation: flickIn var(--flick-duration, 0.48s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .card-wrapper.flicking-in .card-inner {
+      animation: flipFaceIn var(--flick-duration, 0.48s) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .card-wrapper.aligning-in {
+      animation: alignIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+  </style>
+<script id="mighty-interactive-sdk" src="../../../../mighty/sdk/v1/mighty-interactive-sdk.min.js"></script></head>
+<body>
+<div id="app">
+  <div id="discard-area"></div>
+  <div id="stack-area">
+    <div id="restart-screen">
+      <svg class="restart-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+        <path d="M3 3v5h5"></path>
+      </svg>
+      <div class="restart-label" id="restart-label-text">Start over</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const sdk = window.mightyInteractiveSdk;
+
+const CARD_RATIOS = {
+  portrait:  { w: 5, h: 7 },
+  landscape: { w: 7, h: 5 },
+  square:    { w: 1, h: 1 }
+};
+
+function seededRand(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+function buildAngles(count, maxDeg) {
+  const rand = seededRand(42);
+  const angles = [];
+  const MAX = maxDeg || 6;
+  const MIN_DIFF = Math.max(1, MAX * 0.3);
+  let prev = 0;
+  for (let i = 0; i < count; i++) {
+    let angle, tries = 0;
+    do {
+      angle = (rand() * 2 - 1) * MAX;
+      tries++;
+    } while (tries < 20 && Math.abs(angle - prev) < MIN_DIFF);
+    // No forced sign flip — full ±MAX range is available
+    angles.push(parseFloat(angle.toFixed(2)));
+    prev = angle;
+  }
+  return angles;
+}
+
+function contrastFor(hex) {
+  const h = (hex || '#000000').replace('#', '');
+  const r = parseInt(h.slice(0,2), 16);
+  const g = parseInt(h.slice(2,4), 16);
+  const b = parseInt(h.slice(4,6), 16);
+  return (0.299*r + 0.587*g + 0.114*b) > 128 ? '#1f2937' : '#ffffff';
+}
+
+sdk.onSdkReady(async () => {
+  const state = await sdk.state.getState({
+    cardSize: 'portrait',
+    cardRadius: 10,
+    angleSpread: 6,
+    cardColor: '#f3f4f6',
+    showCoverCard: true,
+    coverBgColor: '#2563eb',
+    coverCardText: 'Start',
+    coverCardImage: null,
+    showTapHint: true,
+    tapHintText: 'Tap to continue',
+    cards: [
+      { cardContent: '<p>This is the first card. Add your content here.</p>', cardImage: null },
+      { cardContent: '<p>Second card. Tap to continue through the stack.</p>', cardImage: null },
+      { cardContent: '<p>Third card. You can have as many cards as you like!</p>', cardImage: null }
+    ],
+    restartLabel: 'Start over'
+  });
+
+  const appEl      = document.getElementById('app');
+  const stackEl    = document.getElementById('stack-area');
+  const discardEl  = document.getElementById('discard-area');
+  const restartEl  = document.getElementById('restart-screen');
+  const restartLbl = document.getElementById('restart-label-text');
+
+  const restartLabelText = state.restartLabel != null ? String(state.restartLabel).trim() : 'Start over';
+  restartLbl.textContent = restartLabelText;
+  if (!restartLabelText) restartLbl.style.display = 'none';
+
+  const cardRadius     = state.cardRadius  != null ? state.cardRadius  : 10;
+  const cardColor      = state.cardColor   || '#f3f4f6';
+  const coverBgColor   = state.coverBgColor || '#2563eb';
+  const coverTextColor = contrastFor(coverBgColor);
+
+  document.documentElement.style.setProperty('--card-radius', cardRadius + 'px');
+  document.documentElement.style.setProperty('--card-color',  cardColor);
+
+  const ratio  = CARD_RATIOS[state.cardSize] || CARD_RATIOS.portrait;
+
+  // The short side of the card is always the same as portrait width.
+  // Portrait: width=short, height=long. Landscape: width=long, height=short.
+  // Square: side = midpoint between portrait short and long sides.
+  // This keeps all orientations visually comparable in the space.
+  const MAX_SHORT = Math.min((appEl.clientWidth || 360) - 32, 400);
+  const PORTRAIT_W = MAX_SHORT;
+  const PORTRAIT_H = Math.round(PORTRAIT_W * 7 / 5);
+  let CARD_W, CARD_H;
+  if (state.cardSize === 'landscape') {
+    // Landscape: rotate portrait — width becomes the long side
+    CARD_W = PORTRAIT_H;
+    CARD_H = PORTRAIT_W;
+    // But cap width to container
+    const containerW = appEl.clientWidth || 360;
+    if (CARD_W > containerW - 32) {
+      const scale = (containerW - 32) / CARD_W;
+      CARD_W = containerW - 32;
+      CARD_H = Math.round(CARD_H * scale);
+    }
+  } else if (state.cardSize === 'square') {
+    // Square: midpoint between portrait width and height
+    const side = Math.round((PORTRAIT_W + PORTRAIT_H) / 2);
+    CARD_W = side;
+    CARD_H = side;
+    const containerW = appEl.clientWidth || 360;
+    if (CARD_W > containerW - 32) {
+      CARD_W = containerW - 32;
+      CARD_H = CARD_W;
+    }
+  } else {
+    // Portrait (default)
+    CARD_W = PORTRAIT_W;
+    CARD_H = PORTRAIT_H;
+  }
+
+  stackEl.style.width    = CARD_W + 'px';
+  stackEl.style.height   = CARD_H + 'px';
+  stackEl.style.position = 'relative';
+
+  // Thumb dimensions: keep the long side at 84px, scale the short side by ratio
+  const THUMB_LONG = 84;
+  const THUMB_W = Math.round(THUMB_LONG * ratio.w / Math.max(ratio.w, ratio.h));
+  const THUMB_H = Math.round(THUMB_LONG * ratio.h / Math.max(ratio.w, ratio.h));
+  document.documentElement.style.setProperty('--thumb-w',      THUMB_W + 'px');
+  document.documentElement.style.setProperty('--thumb-h',      THUMB_H + 'px');
+  document.documentElement.style.setProperty('--thumb-radius', Math.round(cardRadius * 0.45) + 'px');
+
+  // Build full card list
+  const allCards = [];
+  if (state.showCoverCard) {
+    const coverText = state.coverCardText != null ? String(state.coverCardText) : '';
+    allCards.push({ type: 'cover', text: coverText, coverImage: state.coverCardImage || null, bgColor: coverBgColor, textColor: coverTextColor });
+  }
+  (state.cards || []).forEach(c => allCards.push({ type: 'content', ...c }));
+
+  const spreadDeg  = state.angleSpread != null ? state.angleSpread : 6;
+  const cardAngles = buildAngles(allCards.length + 4, spreadDeg);
+
+  let currentIndex = 0;
+  let discardStack = [];
+  let animating    = false;
+  let completed    = false;
+  let activeCardEl = null;
+  // The departing card during a flick-out, kept as a separate reference
+  // so showCard() doesn't accidentally remove it.
+  let departingCardEl = null;
+
+  // ── Ghost previews ──────────────────────────────────────────────
+  function buildGhostPreview(cardData, innerW) {
+    const preview = document.createElement('div');
+    preview.className = 'ghost-preview';
+
+    const inner = document.createElement('div');
+    inner.className = 'ghost-preview-inner';
+    inner.style.width  = CARD_W + 'px';
+    inner.style.height = CARD_H + 'px';
+    inner.style.transform = `scale(${innerW / CARD_W})`;
+    inner.style.transformOrigin = 'top left';
+
+    if (cardData.type === 'cover') {
+      inner.style.backgroundColor = cardData.bgColor || coverBgColor;
+      if (cardData.coverImage && cardData.coverImage.url) {
+        inner.style.backgroundImage    = `url(${cardData.coverImage.url})`;
+        inner.style.backgroundSize     = 'cover';
+        inner.style.backgroundPosition = 'center';
+      }
+      const t = cardData.text ? cardData.text.trim() : '';
+      if (t) {
+        const el = document.createElement('div');
+        el.style.cssText = `color:${cardData.textColor||coverTextColor};font-weight:700;font-size:1.5rem;display:flex;align-items:center;justify-content:center;height:100%;text-align:center;padding:1rem;`;
+        el.textContent = t;
+        inner.appendChild(el);
+      }
+    } else {
+      inner.style.cssText = `background:${cardColor};padding:1rem;display:flex;flex-direction:column;gap:0.5rem;overflow:hidden;`;
+      if (cardData.cardImage && cardData.cardImage.url) {
+        const img = document.createElement('img');
+        img.src = cardData.cardImage.url;
+        img.style.cssText = 'width:100%;border-radius:4px;object-fit:cover;flex-shrink:0;';
+        inner.appendChild(img);
+      }
+      if (cardData.cardContent) {
+        const prose = document.createElement('div');
+        prose.style.cssText = 'font-size:0.9rem;line-height:1.5;color:#374151;overflow:hidden;';
+        prose.innerHTML = cardData.cardContent;
+        inner.appendChild(prose);
+      }
+    }
+
+    preview.appendChild(inner);
+    return preview;
+  }
+
+  function renderGhosts() {
+    stackEl.querySelectorAll('.stack-ghost').forEach(el => el.remove());
+    const remaining = allCards.length - currentIndex;
+    if (remaining <= 1) return;
+
+    const ghostCount = Math.min(remaining - 1, 10);
+    const innerW = CARD_W - 12;
+
+    // Iterate last-card → next-card (i = ghostCount-1 down to 0).
+    // insertBefore(ghost, firstChild) puts each new ghost BEHIND all previous,
+    // so the first-inserted (last card) ends up deepest in the DOM.
+    // z-index must match: last card = 0 (deepest), next card = ghostCount-1 (top).
+    for (let i = ghostCount - 1; i >= 0; i--) {
+      const ghost = document.createElement('div');
+      ghost.className       = 'stack-ghost';
+      ghost.style.width     = CARD_W + 'px';
+      ghost.style.height    = CARD_H + 'px';
+      ghost.style.borderRadius = cardRadius + 'px';
+      ghost.style.transform = `rotate(${cardAngles[(currentIndex + 1 + i) % cardAngles.length]}deg)`;
+      // i=ghostCount-1 → last card → deepest → zIndex 0
+      // i=0            → next card → topmost ghost → zIndex ghostCount-1
+      ghost.style.zIndex    = ghostCount - 1 - i;
+
+      const ghostCard = allCards[currentIndex + 1 + i];
+      if (ghostCard) ghost.appendChild(buildGhostPreview(ghostCard, innerW));
+
+      stackEl.insertBefore(ghost, stackEl.firstChild);
+    }
+  }
+
+  // ── Build card element ──────────────────────────────────────────
+  function buildCardEl(cardData) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'card-wrapper';
+    // Cards are built without a fixed angle here; the caller sets the
+    // initial transform (stack angle or 0 for flick-in) before appending.
+    wrapper.style.cssText = `width:${CARD_W}px;height:${CARD_H}px;position:absolute;top:0;left:0;`;
+
+    const inner = document.createElement('div');
+    inner.className = 'card-inner';
+
+    const front = document.createElement('div');
+    front.className = 'card-face card-front';
+    front.style.borderRadius = cardRadius + 'px';
+
+    const frontInset = document.createElement('div');
+    frontInset.className = 'card-front-inset';
+    frontInset.style.borderRadius = Math.max(0, cardRadius - 4) + 'px';
+
+    if (cardData.type === 'cover') {
+      frontInset.classList.add('is-cover');
+      frontInset.style.backgroundColor = cardData.bgColor || coverBgColor;
+
+      if (cardData.coverImage && cardData.coverImage.url) {
+        const bg = document.createElement('div');
+        bg.className = 'cover-bg';
+        bg.style.backgroundImage = `url(${cardData.coverImage.url})`;
+        frontInset.appendChild(bg);
+      }
+
+      const coverText = cardData.text ? cardData.text.trim() : '';
+      if (coverText) {
+        const txt = document.createElement('div');
+        txt.className   = 'cover-text';
+        txt.style.color = cardData.textColor || coverTextColor;
+        txt.textContent = coverText;
+        frontInset.appendChild(txt);
+      }
+    } else {
+      const contentArea = document.createElement('div');
+      contentArea.className = 'card-content-area';
+
+      if (cardData.cardImage && cardData.cardImage.url) {
+        const img = document.createElement('img');
+        img.src = cardData.cardImage.url;
+        img.alt = '';
+        contentArea.appendChild(img);
+      }
+      if (cardData.cardContent) {
+        const prose = document.createElement('div');
+        prose.innerHTML = cardData.cardContent;
+        contentArea.appendChild(prose);
+      }
+      frontInset.appendChild(contentArea);
+
+      if (state.showTapHint) {
+        const hint = document.createElement('div');
+        hint.className   = 'tap-hint';
+        hint.textContent = (state.tapHintText != null ? String(state.tapHintText) : '') || 'Tap to continue';
+        frontInset.appendChild(hint);
+      }
+    }
+
+    front.appendChild(frontInset);
+    front.appendChild(Object.assign(document.createElement('div'), { className: 'card-frame' }));
+
+    const back = document.createElement('div');
+    back.className = 'card-face card-back';
+    back.style.borderRadius = cardRadius + 'px';
+    const backInset = Object.assign(document.createElement('div'), { className: 'card-back-inset' });
+    backInset.style.borderRadius = Math.max(0, cardRadius - 4) + 'px';
+    back.appendChild(backInset);
+    back.appendChild(Object.assign(document.createElement('div'), { className: 'card-back-frame' }));
+
+    inner.appendChild(front);
+    inner.appendChild(back);
+    wrapper.appendChild(inner);
+    return wrapper;
+  }
+
+  // ── Discard pile ────────────────────────────────────────────────
+  function buildThumb(cardData, cardIndex) {
+    const thumb = document.createElement('div');
+    thumb.className = 'discard-thumb';
+    thumb.dataset.cardIndex = cardIndex;
+    thumb.appendChild(Object.assign(document.createElement('div'), { className: 'thumb-frame' }));
+
+    const inner = document.createElement('div');
+    inner.className = 'thumb-inner';
+
+    if (cardData.type === 'cover') {
+      inner.style.backgroundColor = cardData.bgColor || coverBgColor;
+      if (cardData.coverImage && cardData.coverImage.url) {
+        inner.style.backgroundImage    = `url(${cardData.coverImage.url})`;
+        inner.style.backgroundSize     = 'cover';
+        inner.style.backgroundPosition = 'center';
+      }
+      const t = cardData.text ? cardData.text.trim() : '';
+      if (t) {
+        const span = document.createElement('span');
+        span.style.cssText = `color:${cardData.textColor||coverTextColor};font-size:0.38rem;font-weight:700;position:relative;z-index:1;`;
+        span.textContent = t;
+        inner.appendChild(span);
+      }
+    } else {
+      inner.style.background = cardColor;
+      if (cardData.cardImage && cardData.cardImage.url) {
+        inner.style.backgroundImage    = `url(${cardData.cardImage.url})`;
+        inner.style.backgroundSize     = 'cover';
+        inner.style.backgroundPosition = 'center';
+      } else if (cardData.cardContent) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = cardData.cardContent;
+        const span = document.createElement('span');
+        span.style.cssText = 'font-size:0.35rem;line-height:1.3;color:#6b7280;padding:3px;';
+        span.textContent = tmp.textContent.slice(0, 60);
+        inner.appendChild(span);
+      }
+    }
+
+    thumb.appendChild(inner);
+    return thumb;
+  }
+
+  function renderDiscardPile() {
+    discardEl.innerHTML = '';
+    if (!discardStack.length) {
+      discardEl.style.height = '0';
+      discardEl.style.marginBottom = '0';
+      return;
+    }
+    discardEl.style.height = THUMB_H + 'px';
+    discardEl.style.marginBottom = '1.5rem';
+
+    const maxVisible = Math.min(discardStack.length, 6);
+    discardStack.slice(discardStack.length - maxVisible).forEach((cardIdx, i) => {
+      const thumb = buildThumb(allCards[cardIdx], cardIdx);
+      const rot = cardAngles[cardIdx % cardAngles.length];
+      thumb.style.transform = `rotate(${rot}deg) translate(${(i - maxVisible/2)*3}px, ${-i*1.5}px)`;
+      thumb.style.zIndex = i;
+      discardEl.appendChild(thumb);
+    });
+
+    discardEl.querySelectorAll('.discard-thumb').forEach(thumb => {
+      thumb.addEventListener('click', e => {
+        e.stopPropagation();
+        goBackTo(parseInt(thumb.dataset.cardIndex));
+      });
+    });
+  }
+
+  // ── Settle animation ────────────────────────────────────────────
+  // The card must already be rendered at fromAngle before this is called.
+  // We just add the CSS animation class which transitions from that angle to 0.
+  function alignTopCard() {
+    if (!activeCardEl) return;
+    const fromAngle = cardAngles[currentIndex % cardAngles.length];
+    activeCardEl.style.setProperty('--align-from', `${fromAngle}deg`);
+    activeCardEl.classList.add('aligning-in');
+    activeCardEl.addEventListener('animationend', e => {
+      if (e.animationName === 'alignIn') {
+        if (activeCardEl) {
+          activeCardEl.classList.remove('aligning-in');
+          activeCardEl.style.transform = 'rotate(0deg)';
+        }
+      }
+    }, { once: true });
+  }
+
+  // ── Show card ───────────────────────────────────────────────────
+  // skipRemoveActive: when called during a flick-out, the old active
+  // card is already tracked as departingCardEl — don't remove it here.
+  function showCard(index, animateIn, skipRemoveActive) {
+    if (!skipRemoveActive && activeCardEl) { activeCardEl.remove(); activeCardEl = null; }
+    if (index >= allCards.length) { showRestart(); return; }
+
+    renderGhosts();
+    const cardEl = buildCardEl(allCards[index]);
+
+    // For a normal (non-animated) reveal, start the card at its natural
+    // stack angle so alignTopCard() can animate it to upright from there.
+    // For flick-in (animateIn=true), start at rotate(0deg) so the
+    // flick animation controls the transform entirely.
+    if (!animateIn) {
+      const fromAngle = cardAngles[index % cardAngles.length];
+      cardEl.style.transform = `rotate(${fromAngle}deg)`;
+    } else {
+      cardEl.style.transform = 'rotate(0deg)';
+    }
+
+    // Insert BEFORE the departing card so it sits underneath during the flick
+    if (departingCardEl && departingCardEl.parentNode === stackEl) {
+      stackEl.insertBefore(cardEl, departingCardEl);
+    } else {
+      stackEl.appendChild(cardEl);
+    }
+    activeCardEl = cardEl;
+
+    if (animateIn) {
+      const sr = stackEl.getBoundingClientRect();
+      const dr = discardEl.getBoundingClientRect();
+      cardEl.style.setProperty('--tx',             `${dr.left + dr.width/2  - (sr.left + CARD_W/2)}px`);
+      cardEl.style.setProperty('--ty',             `${dr.top  + dr.height/2 - (sr.top  + CARD_H/2)}px`);
+      cardEl.style.setProperty('--flick-rot',      `${cardAngles[index % cardAngles.length]}deg`);
+      cardEl.style.setProperty('--scale-end',      60 / CARD_W);
+      cardEl.style.setProperty('--flick-duration', '0.45s');
+      cardEl.classList.add('flicking-in');
+
+      cardEl.addEventListener('animationend', function onEnd(e) {
+        if (e.animationName === 'flickIn') {
+          cardEl.removeEventListener('animationend', onEnd);
+          cardEl.classList.remove('flicking-in');
+          animating = false;
+        }
+      });
+    }
+
+    cardEl.addEventListener('click', () => { if (!animating) advanceCard(); });
+  }
+
+  // ── Advance card ────────────────────────────────────────────────
+  function advanceCard() {
+    if (animating || currentIndex >= allCards.length) return;
+    animating = true;
+
+    const cardEl = activeCardEl;
+    const sr = stackEl.getBoundingClientRect();
+    const dr = discardEl.getBoundingClientRect();
+
+    // Set up CSS vars for the flick animation
+    cardEl.style.setProperty('--tx',             `${dr.left + dr.width/2  - (sr.left + CARD_W/2)}px`);
+    cardEl.style.setProperty('--ty',             `${dr.top  + dr.height/2 - (sr.top  + CARD_H/2)}px`);
+    cardEl.style.setProperty('--flick-rot',      `${cardAngles[currentIndex % cardAngles.length]}deg`);
+    cardEl.style.setProperty('--scale-end',      60 / CARD_W);
+    cardEl.style.setProperty('--flick-duration', '0.52s');
+
+    // Advance state BEFORE touching the DOM so renderGhosts() uses the new index
+    discardStack.push(currentIndex);
+    currentIndex++;
+    renderDiscardPile();
+
+    // Track the departing card separately so showCard() can insert beneath it
+    departingCardEl = cardEl;
+    activeCardEl    = null;
+
+    // Render the next card underneath the departing card (or show restart/end)
+    if (currentIndex < allCards.length) {
+        showCard(currentIndex, false, true);
+    }
+
+    // Now start the flick on the departing card (still on top due to z-index:20)
+    cardEl.classList.add('flicking-out');
+
+    cardEl.addEventListener('animationend', () => {
+      cardEl.remove();
+      departingCardEl = null;
+
+      if (currentIndex >= allCards.length) {
+        showRestart();
+        animating = false;
+      } else {
+        // New card is already in the DOM; trigger the settle animation.
+        // alignTopCard() sets the initial angle then animates to upright.
+        alignTopCard();
+        animating = false;
+      }
+    }, { once: true });
+  }
+
+  // ── Go back ─────────────────────────────────────────────────────
+  function goBackTo(targetCardIndex) {
+    if (animating) return;
+    animating = true;
+    restartEl.classList.remove('visible');
+    setTimeout(() => { restartEl.style.display = 'none'; }, 350);
+    while (discardStack.length > 0 && discardStack[discardStack.length-1] >= targetCardIndex) discardStack.pop();
+    currentIndex = targetCardIndex;
+    renderDiscardPile();
+    showCard(currentIndex, true, false);
+  }
+
+  // ── Restart ─────────────────────────────────────────────────────
+  function showRestart() {
+    if (!completed) { completed = true; sdk.markAsComplete(); }
+    stackEl.querySelectorAll('.stack-ghost').forEach(el => el.remove());
+    restartEl.style.display = 'flex';
+    requestAnimationFrame(() => requestAnimationFrame(() => restartEl.classList.add('visible')));
+  }
+
+  restartEl.addEventListener('click', () => {
+    restartEl.classList.remove('visible');
+    setTimeout(() => {
+      restartEl.style.display = 'none';
+      discardStack = []; currentIndex = 0;
+      renderDiscardPile();
+      showCard(0, false, false);
+    }, 350);
+  });
+
+  // ── Init ────────────────────────────────────────────────────────
+  renderDiscardPile();
+  showCard(0, false, false);
+});
+</script>
+
+
+<link rel="stylesheet" href="../../../../mighty/mighty-additional-fonts.css"><link rel="stylesheet" href="../../../../mighty/mighty-global-styles.css"><link rel="stylesheet" href="../../../../mighty/mighty-interactive-body-font.css"></body></html>

@@ -1,0 +1,308 @@
+{
+  "version": 1,
+  "name": "Flip cards — adjustable",
+  "formElements": [
+    {
+      "type": "panel",
+      "headerTitle": "Completion",
+      "expandable": false,
+      "formElements": [
+        {
+          "type": "toggle-input",
+          "formKey": "requireAllFlipped",
+          "label": "Require learner to flip all cards before completing",
+          "helperText": "When on, the progress bar is shown and the interactive only marks complete once every card has been flipped. When off, it completes immediately on load."
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "headerTitle": "Colours",
+      "expandable": false,
+      "formElements": [
+        {
+          "type": "color-input",
+          "formKey": "frontBgColour",
+          "label": "Front card background colour",
+          "labelPosition": "top",
+          "isClearColorAvailable": true,
+          "helperText": "Background colour for the front face of all cards"
+        },
+        {
+          "type": "color-input",
+          "formKey": "backBgColour",
+          "label": "Back card background colour",
+          "labelPosition": "top",
+          "isClearColorAvailable": true,
+          "helperText": "Background colour for the back face of all cards"
+        },
+        {
+          "type": "color-input",
+          "formKey": "titleColour",
+          "label": "Title text colour",
+          "labelPosition": "top",
+          "isClearColorAvailable": true,
+          "helperText": "Colour for all card titles (front and back)"
+        },
+        {
+          "type": "color-input",
+          "formKey": "bodyColour",
+          "label": "Body text colour",
+          "labelPosition": "top",
+          "isClearColorAvailable": true,
+          "helperText": "Colour for all body text (front and back)"
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "headerTitle": "Layout",
+      "expandable": false,
+      "formElements": [
+        {
+          "type": "slider-input",
+          "formKey": "columns",
+          "label": "Columns",
+          "minValue": 2,
+          "maxValue": 6,
+          "stepSize": 1,
+          "helperText": "Number of cards shown per row on desktop (2–6)"
+        },
+        {
+          "type": "slider-input",
+          "formKey": "mobileColumns",
+          "label": "Columns on mobile",
+          "minValue": 1,
+          "maxValue": 3,
+          "stepSize": 1,
+          "helperText": "Cards per row on screens narrower than 600px (1–3)"
+        },
+        {
+          "type": "slider-input",
+          "formKey": "deckPadding",
+          "label": "Side padding (px)",
+          "minValue": 0,
+          "maxValue": 80,
+          "stepSize": 4,
+          "helperText": "Left and right padding around the card grid — reduce to make cards larger"
+        },
+        {
+          "type": "selector-input",
+          "formKey": "aspectRatio",
+          "label": "Card shape (aspect ratio)",
+          "labelPosition": "top",
+          "helperText": "Controls the width-to-height proportion of each card",
+          "options": [
+            { "label": "Square (1:1)", "value": "1:1" },
+            { "label": "Landscape (4:3)", "value": "4:3" },
+            { "label": "Wide (16:9)", "value": "16:9" },
+            { "label": "Portrait (3:4)", "value": "3:4" },
+            { "label": "Tall (9:16)", "value": "9:16" },
+            { "label": "Custom", "value": "custom" }
+          ]
+        },
+        {
+          "type": "number-input",
+          "formKey": "customRatioW",
+          "label": "Custom ratio — width",
+          "labelPosition": "top",
+          "minValue": 1,
+          "maxValue": 99,
+          "stepSize": 1,
+          "helperText": "e.g. enter 3 for a 3:2 ratio",
+          "visibilityCondition": {
+            "operator": "and",
+            "conditions": [
+              { "fieldPath": "$form.aspectRatio", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "custom" } }
+            ]
+          }
+        },
+        {
+          "type": "number-input",
+          "formKey": "customRatioH",
+          "label": "Custom ratio — height",
+          "labelPosition": "top",
+          "minValue": 1,
+          "maxValue": 99,
+          "stepSize": 1,
+          "helperText": "e.g. enter 2 for a 3:2 ratio",
+          "visibilityCondition": {
+            "operator": "and",
+            "conditions": [
+              { "fieldPath": "$form.aspectRatio", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "custom" } }
+            ]
+          }
+        },
+        {
+          "type": "number-input",
+          "formKey": "maxCardWidth",
+          "label": "Max card width (px)",
+          "labelPosition": "top",
+          "minValue": 0,
+          "maxValue": 600,
+          "stepSize": 10,
+          "helperText": "Caps card width so they don't stretch too wide. Set to 0 for no limit."
+        },
+        {
+          "type": "slider-input",
+          "formKey": "borderRadius",
+          "label": "Corner roundness (px)",
+          "minValue": 0,
+          "maxValue": 40,
+          "stepSize": 2,
+          "helperText": "0 = sharp corners, 40 = fully rounded"
+        },
+        {
+          "type": "slider-input",
+          "formKey": "titleFontSize",
+          "label": "Title font size (px)",
+          "minValue": 10,
+          "maxValue": 28,
+          "stepSize": 1,
+          "helperText": "Font size for card titles"
+        },
+        {
+          "type": "slider-input",
+          "formKey": "bodyFontSize",
+          "label": "Body font size (px)",
+          "minValue": 10,
+          "maxValue": 24,
+          "stepSize": 1,
+          "helperText": "Font size for body/description text"
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "headerTitle": "Cards",
+      "expandable": false,
+      "formElements": [
+        {
+          "type": "collection-manager",
+          "formKey": "cards",
+          "itemSingularLabel": "Card",
+          "itemPluralLabel": "Cards",
+          "itemTitleProperty": "frontTitle",
+          "itemEditorFormElements": [
+            {
+              "type": "panel",
+              "headerTitle": "Front face",
+              "expandable": false,
+              "formElements": [
+                {
+                  "type": "selector-input",
+                  "formKey": "frontType",
+                  "label": "Front content type",
+                  "labelPosition": "top",
+                  "options": [
+                    { "label": "Image only", "value": "image" },
+                    { "label": "Image + text", "value": "image-title" },
+                    { "label": "Text only", "value": "text" }
+                  ]
+                },
+                {
+                  "type": "asset-input",
+                  "formKey": "frontImage",
+                  "label": "Front image",
+                  "accept": "image/*",
+                  "helperText": "Upload an image for the front of this card",
+                  "visibilityCondition": {
+                    "operator": "or",
+                    "conditions": [
+                      { "fieldPath": "$item.frontType", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "image" } },
+                      { "fieldPath": "$item.frontType", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "image-title" } }
+                    ]
+                  }
+                },
+                {
+                  "type": "richtext-input",
+                  "formKey": "frontTitle",
+                  "label": "Front title",
+                  "labelPosition": "top",
+                  "visibilityCondition": {
+                    "operator": "or",
+                    "conditions": [
+                      { "fieldPath": "$item.frontType", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "image-title" } },
+                      { "fieldPath": "$item.frontType", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "text" } }
+                    ]
+                  }
+                },
+                {
+                  "type": "richtext-input",
+                  "formKey": "frontBody",
+                  "label": "Front text",
+                  "labelPosition": "top",
+                  "visibilityCondition": {
+                    "operator": "or",
+                    "conditions": [
+                      { "fieldPath": "$item.frontType", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "text" } },
+                      { "fieldPath": "$item.frontType", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "image-title" } }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "headerTitle": "Back face",
+              "expandable": false,
+              "formElements": [
+                {
+                  "type": "selector-input",
+                  "formKey": "backType",
+                  "label": "Back content type",
+                  "labelPosition": "top",
+                  "options": [
+                    { "label": "Image only", "value": "image" },
+                    { "label": "Image + text", "value": "image-title" },
+                    { "label": "Text only", "value": "text" }
+                  ]
+                },
+                {
+                  "type": "asset-input",
+                  "formKey": "backImage",
+                  "label": "Back image",
+                  "accept": "image/*",
+                  "helperText": "Upload an image for the back of this card",
+                  "visibilityCondition": {
+                    "operator": "or",
+                    "conditions": [
+                      { "fieldPath": "$item.backType", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "image" } },
+                      { "fieldPath": "$item.backType", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "image-title" } }
+                    ]
+                  }
+                },
+                {
+                  "type": "richtext-input",
+                  "formKey": "backTitle",
+                  "label": "Back title",
+                  "labelPosition": "top",
+                  "visibilityCondition": {
+                    "operator": "or",
+                    "conditions": [
+                      { "fieldPath": "$item.backType", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "image-title" } },
+                      { "fieldPath": "$item.backType", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "text" } }
+                    ]
+                  }
+                },
+                {
+                  "type": "richtext-input",
+                  "formKey": "backBody",
+                  "label": "Back text",
+                  "labelPosition": "top",
+                  "visibilityCondition": {
+                    "operator": "or",
+                    "conditions": [
+                      { "fieldPath": "$item.backType", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "text" } },
+                      { "fieldPath": "$item.backType", "fieldType": "string", "condition": { "operator": "eq", "matchValue": "image-title" } }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

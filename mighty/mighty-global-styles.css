@@ -1,0 +1,40 @@
+:root {
+  --mighty-theme-color: #806a57;
+  --mighty-color-style-YPuHttPOjAjaUQvGaWUY5: #F7EED7;
+  --mighty-color-style-IaircLLc6gaU5tgWosSmy: #829EBA;
+  --mighty-color-style-0pjRX95eP9v_-8hQrBuWo: #806A57;
+  --mighty-color-style-uquCVUujjCFg57zb0_nlu: #A68D77;
+}
+
+/* Type Style: OpH6qzeLCOZ2uNHUjNf-b */
+.mighty-type-style-OpH6qzeLCOZ2uNHUjNf-b {
+
+    font-family: "Merriweather" !important;
+    --mighty-font-family: "Merriweather" !important;
+
+
+
+
+
+
+
+
+}
+
+@media (min-width: 1280px) {
+.mighty-type-style-OpH6qzeLCOZ2uNHUjNf-b {
+    font-size: 18px;
+}
+}
+
+@media (min-width: 600px) and (max-width: 1279px) {
+.mighty-type-style-OpH6qzeLCOZ2uNHUjNf-b {
+    font-size: 17px;
+}
+}
+
+@media (max-width: 599px) {
+.mighty-type-style-OpH6qzeLCOZ2uNHUjNf-b {
+    font-size: 17px;
+}
+}
